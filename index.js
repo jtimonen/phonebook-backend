@@ -16,6 +16,7 @@ morgan.token('data', function (req, res) {
 app.use(express.json())
 app.use(cors())
 app.use(morgan(':method :url :status - :response-time ms :data'))
+app.use(express.static('build'))
 
 // Hardcoded data
 let persons = [
