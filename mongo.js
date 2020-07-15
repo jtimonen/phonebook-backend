@@ -1,33 +1,52 @@
 const mongoose = require('mongoose')
+const n = process.argv.length
 
-if (process.argv.length<3) {
-  console.log('give password as argument')
+if (n < 3) {
+  console.log('You must give 3 or 5 arguments!')
   process.exit(1)
+} else if (n === 4) {
+  console.log('You must give 3 or 5 arguments!')
+  process.exit(1)
+} else {
+
+  // Define a Mongoose schema
+  const contactSchema = new mongoose.Schema({
+    name: String,
+    number: String,
+  })
+
+  // Define a Mongoose model
+  const Contact = mongoose.model('Contact', contactSchema)
+
+  // Define callback function for showing all contacts
+  const callbackShow = persons => {
+    console.log("PHONEBOOK")
+    persons.forEach(element => {
+      console.log(`${element.name}: ${element.number}`)
+    });
+    mongoose.connection.close()
+  }
+
+  // Define callback function for adding new contact
+  const callbackAdd = response => {
+    console.log(`Added ${response.name} (number ${response.number}) to phonebook!`)
+    mongoose.connection.close()
+  }
+
+  // Connect to database
+  const password = process.argv[2]
+  const dbname = 'phonebook'
+  const url =
+    `mongodb+srv://jtimonen:${password}@frank.8gduu.mongodb.net/${dbname}?retryWrites=true&w=majority`
+  mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+
+  if (n === 3) {
+    // Show all contacts in database
+    Contact.find({}).then(callbackShow)
+  } else {
+    // Add new contact to database
+    const contact = new Contact({ name: process.argv[3], number: process.argv[4] })
+    contact.save().then(callbackAdd)
+  }
+
 }
-
-const password = process.argv[2]
-const dbname = 'testi'
-const url =
-  `mongodb+srv://jtimonen:${password}@frank.8gduu.mongodb.net/${dbname}?retryWrites=true&w=majority`
-
-console.log(url)
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
-
-const noteSchema = new mongoose.Schema({
-  content: String,
-  date: Date,
-  important: Boolean,
-})
-
-const Note = mongoose.model('Note', noteSchema)
-
-const note = new Note({
-  content: 'HTML is Easy',
-  date: new Date(),
-  important: true,
-})
-
-note.save().then(response => {
-  console.log('note saved!')
-  mongoose.connection.close()
-})
