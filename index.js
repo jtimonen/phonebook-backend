@@ -8,7 +8,9 @@ const app = express()
 // Middleware
 app.use(express.json())
 app.use(cors())
-//app.use(express.static('build'))
+
+// Static frontend build
+app.use(express.static('build'))
 
 // Custom token for the morgan middleware
 morgan.token('data', function (req, res) {
