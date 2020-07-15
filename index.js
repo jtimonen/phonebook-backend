@@ -64,18 +64,23 @@ app.post('/api/persons', (request, response, next) => {
     const body = request.body
     if (!body.name) { return response.status(400).json({ error: 'name missing' }) }
     if (!body.number) { return response.status(400).json({ error: 'number missing' }) }
+    const newContact = new Contact({ name: body.name, number: body.number })
+    newContact.save()
+        .then(savedContact => { response.json(savedContact) })
+        .catch(error => next(error))
+})
 
-    if (true) {
-        // New contact
-        const newContact = new Contact({ name: body.name, number: body.number })
-        newContact.save().then(savedContact => { response.json(savedContact) })
-    } else {
-        // Update existing contact
-        const newContact = { name: body.name, number: body.number }
-        Contact.findByIdAndUpdate(request.params.id, newContact, { new: true })
-            .then(updatedContact => {response.json(updatedContact)})
-            .catch(error => next(error))
-    }
+// PUT
+app.put('/api/persons', (request, response, next) => {
+    const body = request.body
+    if (!body.name) { return response.status(400).json({ error: 'name missing' }) }
+    if (!body.number) { return response.status(400).json({ error: 'number missing' }) }
+
+    // Update existing contact
+    const newContact = { name: body.name, number: body.number }
+    Contact.findByIdAndUpdate(request.params.id, newContact, { new: true })
+        .then(updatedContact => { response.json(updatedContact) })
+        .catch(error => next(error))
 })
 
 // LISTEN
