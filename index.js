@@ -13,7 +13,7 @@ app.use(cors())
 app.use(express.static('build'))
 
 // Custom token for the morgan middleware
-morgan.token('data', function (req, res) {
+morgan.token('data', function (req) {
     var out = ' '
     if (req.method === 'POST') { out = JSON.stringify(req.body) }
     return out
@@ -24,17 +24,17 @@ app.use(morgan(':method :url :status - :response-time ms :data'))
 const Contact = require('./models/contact')
 
 // Error handler middleware
-const castErrorHandler = (error, request, response, next) => {
+const castErrorHandler = (error, _, response, next) => {
     console.error(error.message)
     if (error.name === 'CastError') { return response.status(400).send({ error: 'Malformatted id' }) }
     next(error)
 }
-const unknownEndpoint = (request, response) => { response.status(404).send({ error: 'Unknown endpoint' }) }
+const unknownEndpoint = (_, response) => { response.status(404).send({ error: 'Unknown endpoint' }) }
 
 // Routes
-app.get('/', (req, res) => { res.send('<h1>My phonebook backend</h1> See /info for info.') })
-app.get('/api/persons', (req, res) => { Contact.find({}).then(contacts => { res.json(contacts) }) })
-app.get('/info', (req, res) => {
+app.get('/', (_, res) => { res.send('<h1>My phonebook backend</h1> See /info for info.') })
+app.get('/api/persons', (_, res) => { Contact.find({}).then(contacts => { res.json(contacts) }) })
+app.get('/info', (_, res) => {
     Contact.find({}).then(contacts => {
         const n = contacts.length
         let content = '<h1>Info</h1>'
@@ -59,7 +59,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 // DELETE
 app.delete('/api/persons/:id', (request, response, next) => {
     Contact.findByIdAndRemove(request.params.id)
-        .then(result => { response.status(204).end() })
+        .then(() => { response.status(204).end() })
         .catch(error => next(error))
 })
 
