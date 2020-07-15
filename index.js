@@ -4,7 +4,11 @@ const express = require('express')
 const cors = require('cors')
 var morgan = require('morgan')
 const app = express()
-const Contact = require('./models/contact')
+
+// Middleware
+app.use(express.json())
+app.use(cors())
+//app.use(express.static('build'))
 
 // Custom token for the morgan middleware
 morgan.token('data', function (req, res) {
@@ -12,12 +16,10 @@ morgan.token('data', function (req, res) {
     if (req.method === 'POST') { out = JSON.stringify(req.body) }
     return out
 })
-
-// Middleware
-app.use(express.json())
-app.use(express.static('build'))
-app.use(cors())
 app.use(morgan(':method :url :status - :response-time ms :data'))
+
+// Import mongoose model
+const Contact = require('./models/contact')
 
 // Error handler middleware
 const castErrorHandler = (error, request, response, next) => {
@@ -71,7 +73,7 @@ app.post('/api/persons', (request, response, next) => {
 })
 
 // PUT
-app.put('/api/persons', (request, response, next) => {
+app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
     if (!body.name) { return response.status(400).json({ error: 'name missing' }) }
     if (!body.number) { return response.status(400).json({ error: 'number missing' }) }
