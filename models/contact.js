@@ -1,8 +1,10 @@
 // Setup
 const mongoose = require('mongoose')
+mongoose.set('useCreateIndex', true)
 const url = process.env.MONGODB_URL
 console.log('Connecting to', url)
 mongoose.set('useFindAndModify', false)
+var uniqueValidator = require('mongoose-unique-validator')
 
 // Connection
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -14,9 +16,12 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // Define a Mongoose schema
 const contactSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: { type: String, required: true, unique: true, minlength: 3 },
+    number: { type: String, required: true, minlength: 8 }
 })
+
+// Validation that requires unique names
+contactSchema.plugin(uniqueValidator)
 
 // Don't show id and version in toJSON
 contactSchema.set('toJSON', {
