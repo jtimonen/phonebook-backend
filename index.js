@@ -24,9 +24,13 @@ app.use(morgan(':method :url :status - :response-time ms :data'))
 const Contact = require('./models/contact')
 
 // Error handler middleware
-const castErrorHandler = (error, _, response, next) => {
+const errorHandler = (error, _, response, next) => {
     console.error(error.message)
-    if (error.name === 'CastError') { return response.status(400).send({ error: 'Malformatted id' }) }
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
     next(error)
 }
 const unknownEndpoint = (_, response) => { response.status(404).send({ error: 'Unknown endpoint' }) }
@@ -80,7 +84,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     if (!body.name) { return response.status(400).json({ error: 'name missing' }) }
     if (!body.number) { return response.status(400).json({ error: 'number missing' }) }
 
-    // Update existing contact
+    // Update existing contact (no validation done)
     const newContact = { name: body.name, number: body.number }
     Contact.findByIdAndUpdate(request.params.id, newContact, { new: true })
         .then(updatedContact => { response.json(updatedContact) })
@@ -94,4 +98,4 @@ app.listen(PORT, () => {
 })
 
 app.use(unknownEndpoint)
-app.use(castErrorHandler)
+app.use(errorHandler) // Cast and validation errors
